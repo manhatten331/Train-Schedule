@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+        crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
+</head>
+
+<body>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col-2">#</th>
+                <th scope="col-2">Train Name</th>
+                <th scope="col-2">Destination</th>
+                <th scope="col-2">Frequency</th>
+                <th scope="col-2">Next Arrival</th>
+                <th scope="col-2">Minutes Away</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+
+    <form>
+        <div class="form-row">
+            <div class="form-group col-md-12">
+                <label for="inputName">Train Name</label>
+                <input type="name" class="form-control" id="inputName" placeholder="Train Name">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputRole">Destination</label>
+            <input type="text" class="form-control" id="inputDest" placeholder="Raleigh, Austin, Atlanta...">
+        </div>
+        <div class="form-group">
+            <label for="inputDate">Frequency (mins)</label>
+            <input type="text" class="form-control" id="inputMins" placeholder="30 mins, 45 mins, 60 mins ...">
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-12">
+                <label for="inputRate">First Train Time</label>
+                <input type="text" class="form-control" id="inputTime" placeholder="7:00 am, 8:00 am, 9:00 am...">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitInput">Submit</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+        crossorigin="anonymous"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+
+    <script>
+
+        var config = {
+            apiKey: "AIzaSyAJTH_BbEfXIo_s8Te558JvTqAqdtjVNmo",
+            authDomain: "first-firebase-84877.firebaseapp.com",
+            databaseURL: "https://first-firebase-84877.firebaseio.com",
+            projectId: "first-firebase-84877",
+            storageBucket: "first-firebase-84877.appspot.com",
+            messagingSenderId: "50801096553"
+        };
+        firebase.initializeApp(config);
+
+        var database = firebase.database();
+
+        var name = "";
+        var dest = "";
+        var time = "";
+        var mins = 0;
+        var rowNum = 0;
+
+        $("#submitInput").on("click", function (event) {
+            event.preventDefault();
+
+            name = $("#inputName").val().trim();
+            dest = $("#inputDest").val().trim();
+            mins = $("#inputMins").val().trim();
+            time = moment($("#inputTime").val().trim(), "hh:mm").format("X")
+
+            database.ref().push({
+                name: name,
+                dest: dest,
+                time: time,
+                mins: mins
+            });
+
+            console.log("click")
+            console.log(name)
+
+            // var display = $("<tr>");
+
+            //$("table").append("<tr>" + name + "</tr>");
+
+            // rowNum++;
+
+            // var newRow = "<tr><th>" + rowNum + "</th>" + "<td>" + name + "</td>" + "<td>" + role + "</td>"
+
+            // $('.table > tbody:last-child').append("<tr>" +
+            //     "<th>" +
+            //     rowNum +
+            //     "</th>" +
+
+            //     "<td>" +
+            //     name +
+            //     "</td>" +
+
+            //     "<td>" +
+            //     dest +
+            //     "</td>" +
+
+            //     "<td>" +
+            //     mins +
+            //     "</td>" +
+
+            //     "<td>" +
+            //     time +
+            //     "</td>" +
+
+            //     "</tr>")
+
+        });
+
+        database.ref().on("child_added", function (childSnapshot) {
+
+            var trainName = childSnapshot.val().name;
+            var trainDest = childSnapshot.val().dest;
+            var trainTime = childSnapshot.val().time;
+            var trainMins = childSnapshot.val().mins;
+
+            console.log(trainName);
+            console.log(trainDest);
+            console.log(trainTime);
+            console.log(trainMins);
+
+            var firstTimeConverted = moment.unix(trainTime).format("HH:mm");
+            console.log(firstTimeConverted);
+
+            // Difference between the times
+            var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+            console.log("DIFFERENCE IN TIME: " + diffTime);
+
+            // Time apart (remainder)
+            var tRemainder = diffTime % trainMins;
+            console.log(tRemainder);
+
+            // Minute Until Train
+            var tMinutesTillTrain = trainMins - tRemainder;
+            console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
+
+            // Next Train
+            var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+            console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
+
+            rowNum++;
+
+            var newRow = $("<tr>").append(
+                $("<th>").text(rowNum),
+                $("<td>").text(name),
+                $("<td>").text(dest),
+                $("<td>").text(mins),
+                $("<td>").text(firstTimeConverted),
+                $("<td>").text(nextTrain)
+            )
+
+            $('.table > tbody:last-child').append(newRow)
+        });
+
+    </script>
+
+</body>
+
+</html>
